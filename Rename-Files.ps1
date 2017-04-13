@@ -38,7 +38,7 @@ MediaFolder
     - [MetaInfo]Name of Show - 3 [Quality information][Hash code].mkv
     - [MetaInfo]Name of Show - 4 [Quality information][Hash code].mkv
 
-Rename Files -Path C:\MediaFolder 
+Rename-Files -Path C:\MediaFolder 
 
 .EXAMPLE 
 
@@ -51,7 +51,7 @@ MediaFolder
         - [MetaInfo]Name of Show - 3 [Quality information][Hash code].mkv
         - [MetaInfo]Name of Show - 4 [Quality information][Hash code].mkv
 
-Rename Files -Path C:\MediaFolder -Recurse
+Rename-Files -Path C:\MediaFolder -Recurse
 
 .EXAMPLE
 
@@ -64,7 +64,7 @@ MediaFolder
         - [MetaInfo]Name of Show - 3 [Quality information][Hash code].mkv
         - [MetaInfo]Name of Show - 4 [Quality information][Hash code].mkv
 
-Rename Files -Path C:\MediaFolder -NewNameForFiles "Localized Show Name" -Recurse 
+Rename-Files -Path C:\MediaFolder -NewNameForFiles "Localized Show Name" -Recurse 
 
 .NOTES
 
@@ -92,6 +92,146 @@ function Rename-Files  {
                            Else { Rename-String -KinoFileName $file -NewShowName $NewNameForFiles } 
 
             if ($newFileName) { Rename-Item -LiteralPath $fullFilePath -NewName $newFileName }
+        }
+    }
+}
+
+<#
+.SYNOPSIS
+
+Creates a folder of symbolic links to the media files at the provided path (or in the immediate subdirectories of the provided path if the Recurse switch is specified). The names of the symbolic links
+will be in a Plex friendly format such as  "Show Name - 1.mkv" and "Show Name - S1E1.mkv" in the case that season information is specified through the directory structure. The folder containing the symbolic links
+will be created in the same directory as the files being linked with the same name but with "Symbolic Links" appended. Feel free to move this folder to wherever its convenient but keep note of the limitations of symbolic links across drives.
+
+.DESCRIPTION
+
+In the case that the Recurse isn't specified, the media files (.mkv, .avi, .mp4) located within the directory at the specified path will have symbolic links created whose names will be in a Plex friendly format.
+This format takes the form of "Show Name - 1.mkv" and "Show Name - S1E1.mkv". 
+
+If Recurse is specified, then the provided path is assumed to be a directory containing sub-directories denoting seasons. The name of these folders is used to append the season information
+to the contained files during the symbolic link naming process (for example a folder named Season 2 will cause the symbolic links to have S2 as part of their file name).
+
+.PARAMETER Path 
+
+The path to a directory containing media files or immediate subdirectories containing media files to be linked.
+
+.PARAMETER NewNameForFiles
+
+This is an optional string parameter that will be used to modify the name of the show rather than use the name of the show determined during the parsing process. For instance, passing "Mystery Show" here
+while renaming a directory of media files named "Non-mystery Show" will result in all the files being renamed to "Mystery Show". In particular, this is useful for renaming shows from a localized name to
+the original name or vice versa.
+
+.EXAMPLE
+
+Create links to all the media files at the provided path with the default process. As an example the first link will be named to "Name of Show - 1.mkv"
+
+FOLDER STRUCTURE (Start)
+
+MediaFolder
+    - [MetaInfo]Name of Show - 1 [Quality information][Hash code].mkv
+    - [MetaInfo]Name of Show - 2 [Quality information][Hash code].mkv
+    - [MetaInfo]Name of Show - 3 [Quality information][Hash code].mkv
+    - [MetaInfo]Name of Show - 4 [Quality information][Hash code].mkv
+
+FOLDER STRUCTURE (Final)
+
+MediaFolder
+    - MediaFolder Symbolic Links
+        - Name of Show - 1.mkv
+        - Name of Show - 2.mkv
+        - Name of Show - 3.mkv
+        - Name of Show - 4.mkv
+    - [MetaInfo]Name of Show - 1 [Quality information][Hash code].mkv
+    - [MetaInfo]Name of Show - 2 [Quality information][Hash code].mkv
+    - [MetaInfo]Name of Show - 3 [Quality information][Hash code].mkv
+    - [MetaInfo]Name of Show - 4 [Quality information][Hash code].mkv
+
+Create-RenamedSymbolicLinksToFiles -Path C:\MediaFolder 
+
+.EXAMPLE 
+
+Create links to all the media files in the immediate subdirectories of the provided path with the default process. As an example the first link will be named to "Name of Show - S01E01.mkv"
+
+FOLDER STRUCTURE (Start)
+
+MediaFolder
+    - Season 1
+        - [MetaInfo]Name of Show - 1 [Quality information][Hash code].mkv
+        - [MetaInfo]Name of Show - 2 [Quality information][Hash code].mkv
+        - [MetaInfo]Name of Show - 3 [Quality information][Hash code].mkv
+        - [MetaInfo]Name of Show - 4 [Quality information][Hash code].mkv
+
+FOLDER STRUCTURE (Final)
+
+MediaFolder
+    - Season 1
+        - [MetaInfo]Name of Show - 1 [Quality information][Hash code].mkv
+        - [MetaInfo]Name of Show - 2 [Quality information][Hash code].mkv
+        - [MetaInfo]Name of Show - 3 [Quality information][Hash code].mkv
+        - [MetaInfo]Name of Show - 4 [Quality information][Hash code].mkv
+        - Season 1 Symbolic Links
+            - Name of Show - S01E01.mkv
+            - Name of Show - S01E02.mkv
+            - Name of Show - S01E03.mkv
+            - Name of Show - S01E04.mkv
+
+Create-RenamedSymbolicLinksToFiles -Path C:\MediaFolder -Recurse
+
+.EXAMPLE
+
+Create links to all the media files in the immediate subdirectories of the provided path with a new name. As an example the first link will be named to "Localized Show Name - S01E01.mkv"
+
+FOLDER STRUCTURE (Start)
+
+MediaFolder
+    - Season 1
+        - [MetaInfo]Name of Show - 1 [Quality information][Hash code].mkv
+        - [MetaInfo]Name of Show - 2 [Quality information][Hash code].mkv
+        - [MetaInfo]Name of Show - 3 [Quality information][Hash code].mkv
+        - [MetaInfo]Name of Show - 4 [Quality information][Hash code].mkv
+
+FOLDER STRUCTURE (Final)
+
+MediaFolder
+    - Season 1
+        - [MetaInfo]Name of Show - 1 [Quality information][Hash code].mkv
+        - [MetaInfo]Name of Show - 2 [Quality information][Hash code].mkv
+        - [MetaInfo]Name of Show - 3 [Quality information][Hash code].mkv
+        - [MetaInfo]Name of Show - 4 [Quality information][Hash code].mkv
+        - Season 1 Symbolic Links
+            - Localized Show Name - S01E01.mkv
+            - Localized Show Name - S01E02.mkv
+            - Localized Show Name - S01E03.mkv
+            - Localized Show Name - S01E04.mkv
+
+Create-RenamedSymbolicLinksToFiles -Path C:\MediaFolder -NewNameForFiles "Localized Show Name" -Recurse 
+
+.NOTES
+
+#>
+function Create-RenamedSymbolicLinksToFiles  {
+    param
+    (
+        [Parameter(Mandatory=$true)][string]$Path,
+        [Parameter(Mandatory=$false)][string]$NewNameForFiles,
+        [switch]$Recurse
+    )
+
+    $folders = If ($Recurse) {Get-ChildItem -Path $Path -Directory} Else {, $Path}
+
+    foreach ($folder in $folders) {
+        $seasonNumber = $folder -replace '\D+(\d+)', '$1'
+
+        $files = Get-ChildItem -Path $folder.FullName | Where-Object {$_.Extension -eq ".mkv" -or $_.Extension -eq ".avi" -or $_.Extension -eq ".mp4"}
+        $nameOfShow = Split-Path $folder -Leaf
+
+        foreach($file in $files) {
+            $fullFilePath = "$($folder.FullName)\\$file"
+
+            $newFileName = If ($Recurse) { Rename-String -KinoFileName $file -NewShowName $NewNameForFiles -SeasonNumber $seasonNumber } 
+                           Else { Rename-String -KinoFileName $file -NewShowName $NewNameForFiles } 
+
+            if ($newFileName) { Generate-SymbolicLink -MediaDirectory $folder.FullName -MediaToSymLink $fullFilePath -SymLinkName $newFileName}
         }
     }
 }
@@ -255,4 +395,53 @@ function Save-CurrentFileNames {
     if (!(Test-Path $outfile)) {
         Get-ChildItem -Path $Path | Format-List -Property Name | Out-File $outfile
     }   
+}
+
+<#
+.SYNOPSIS
+
+Generates a symbolic link to the media file provided. A folder is made in the same directory specified by MediaDirectory named the same thing as that containing folder with " Symbolic Links" appended.
+This folder can be moved to wherever is convenient for you. 
+
+.DESCRIPTION
+
+Generates a symbolic link to the media file provided. A folder is made in the same directory specified by MediaDirectory named the same thing as that containing folder with " Symbolic Links" appended.
+This folder can be moved to wherever is convenient for you. 
+
+The folder is only attempted to be created once. If this file already exists, the symbolic links are placed inside. If there are files of the same name within the folder, the existing links are not overridden.
+
+.PARAMETER MediaDirectory
+
+The path to the containing folder of the media file being manipulated.
+
+.PARAMETER MediaToSymLink
+
+The full path to the media file that will be linked
+
+.PARAMETER SymLinkName
+
+The name of the symbolic link.
+
+.EXAMPLE
+
+Generate-SymbolicLink -MediaDirectory "C:\MediaDirectory" -MediaToSymLink "C:\MediaDirectory\[Metadata]My favorite show - 1 [Quality Info] [Hashcode].mkv" -SymLinkName "Renamed show"
+
+#>
+function Generate-SymbolicLink {
+    param
+    (
+        [Parameter(Mandatory=$true)][string]$MediaDirectory,
+        [Parameter(Mandatory=$true)][string]$MediaToSymLink,
+        [Parameter(Mandatory=$true)][string]$SymLinkName
+    )
+
+    $symbolLinkFolderName = Split-Path -Path $MediaDirectory -Leaf
+    $symbolLinkFolderFullPath = "$MediaDirectory\\$symbolLinkFolderName Symbolic Links"
+
+    if (!(Test-Path $symbolLinkFolderFullPath)) 
+    {
+        New-Item $symbolLinkFolderFullPath -ItemType Directory
+    }
+
+    New-Item -ItemType SymbolicLink -Path $symbolLinkFolderFullPath -Name $SymLinkName -Value $MediaToSymLink
 }
