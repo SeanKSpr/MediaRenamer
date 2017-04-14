@@ -346,6 +346,8 @@ function Get-MediaGroups  {
         [Parameter(Mandatory=$true)][string]$MediaFile
     )
 
+    $MediaFile = $MediaFile -replace "_", ' '
+
     $pattern = '(?:(?:\[|\().*?(?:\]|\)))?(.*)\s*\-\s*(?:S(\d+))?E?(\d+)(?:[\-\w\s]*)[\(\[\w\s\]\)]*(.mkv|.mp4|.avi)$'
     $captureGroups = [regex]::Match($MediaFile, $pattern).captures.groups
     if (!$captureGroups) {
